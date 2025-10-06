@@ -1,8 +1,8 @@
 class Cake extends Thread{
     public void run(){
-        System.out.println("Mixing Products" + Cake.currentThread().getId());
-        System.out.println("Baking" + Cake.currentThread().getId());
-        System.out.println("Deccorating Cake" + Cake.currentThread().getId());
+        System.out.println("Mixing Products : " + Cake.currentThread().getId());
+        System.out.println("Baking : " + Cake.currentThread().getId());
+        System.out.println("Deccorating Cake : " + Cake.currentThread().getId());
     }
     
 }
@@ -10,11 +10,11 @@ class Cake extends Thread{
 
 public class ThreadBaking {
     public static void main(String[] args) {
-        try {
-            
-        } catch (Exception e) {
-            // TODO: handle exception
+        int cakeCount =4;
+        for (int i = 0; i < cakeCount; i++) {
+            Cake cake = new Cake();
+            cake.start();
         }
-        
+       
     }
 }
