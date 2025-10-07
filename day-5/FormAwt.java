@@ -1,6 +1,8 @@
 
 class form extends Simple{
-    
+    form(){
+        super();
+    }
 }
 
 public class FormAwt {
