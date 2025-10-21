@@ -43,44 +43,70 @@ class ballGame extends Frame implements MouseMotionListener{
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        int x = e.getX();
-        int y = e.getY();
+        int mouseX = e.getX();
+        int mouseY = e.getY();
+        
+        // Calculate the center of the ball
+        int ballCenterX = cricleX + cricleRadius;
+        int ballCenterY = cricleY + cricleRadius;
 
-        int speed = 20; // increase this number to make it harder
+        // Calculate the vector from mouse to ball
+        double dx = ballCenterX - mouseX;
+        double dy = ballCenterY - mouseY;
 
+        // Calculate the distance
+        double distance = Math.sqrt(dx * dx + dy * dy);
 
-        if(x<cricleX + cricleRadius){
-            cricleX+= speed;
-        }
-        if(x>cricleX + cricleRadius){
-            cricleX-= speed;
-        }
-        if(y<cricleY + cricleRadius){
-            cricleY+= speed;
-        }
-        if(y>cricleY + cricleRadius){
-            cricleY-=speed;
+        // Base speed
+        double speed = 40;
+
+        // If the mouse is very close, move faster
+        if (distance < cricleRadius * 3) {
+            speed *= (1 + (cricleRadius * 3 - distance) / (cricleRadius * 3));
         }
 
-        // keep within window boundaries
+        // Normalize the movement vector and apply speed
+        if (distance > 0) {
+            dx = (dx / distance) * speed;
+            dy = (dy / distance) * speed;
+        }
+
+        // Update position
+        cricleX += dx;
+        cricleY += dy;
+
+        // Keep within window boundaries with smooth boundary behavior
         int windowWidth = getWidth();
         int windowHeight = getHeight();
 
-        if (cricleX < 0) cricleX = 0;
-        if (cricleY < 0) cricleY = 0;
-        if (cricleX + 2 * cricleRadius > windowWidth)
-            cricleX = windowWidth - 2 * cricleRadius;
-        if (cricleY + 2 * cricleRadius > windowHeight)
-            cricleY = windowHeight - 2 * cricleRadius;
+        // Add boundary repulsion
+        if (cricleX < cricleRadius) {
+            cricleX += speed * 0.5;
+        }
+        if (cricleY < cricleRadius) {
+            cricleY += speed * 0.5;
+        }
+        if (cricleX + 2 * cricleRadius > windowWidth - cricleRadius) {
+            cricleX -= speed * 0.5;
+        }
+        if (cricleY + 2 * cricleRadius > windowHeight - cricleRadius) {
+            cricleY -= speed * 0.5;
+        }
+
+        // Ensure the ball stays within bounds
+        cricleX = Math.max(0, Math.min(cricleX, windowWidth - 2 * cricleRadius));
+        cricleY = Math.max(0, Math.min(cricleY, windowHeight - 2 * cricleRadius));
 
         
 
 
-        int dx = x - (cricleX + cricleRadius);
-        int dy = y - (cricleY + cricleRadius);
-        double distance = Math.sqrt(dx * dx + dy * dy);
+        // Check if mouse caught the ball
+        double distToMouse = Math.sqrt(
+            Math.pow(mouseX - (cricleX + cricleRadius), 2) +
+            Math.pow(mouseY - (cricleY + cricleRadius), 2)
+        );
 
-        if (distance < cricleRadius) {
+        if (distToMouse < cricleRadius) {
             JOptionPane.showMessageDialog(this, "Vijay is Yours");
             dispose(); // 🔹 closes the Frame window
             System.exit(0); // 🔹 exits the program completely
