@@ -7,8 +7,32 @@ class ballGame extends Frame implements MouseMotionListener{
     
     int cricleX =200, cricleY = 200,cricleRadius = 50;  // default Value
     Image ballImage;
+    double gameSpeed = 20; // default speed that will be updated by user input
 
     ballGame(){
+        // Get speed from user using dialog box
+        String speedInput = JOptionPane.showInputDialog(null, 
+            "Enter game speed (10-50):\n10: Easy\n30: Medium\n50: Hard", 
+            "Game Speed Setup", 
+            JOptionPane.QUESTION_MESSAGE);
+        
+        // Validate and set the speed
+        try {
+            double userSpeed = Double.parseDouble(speedInput);
+            if (userSpeed >= 10 && userSpeed <= 50) {
+                gameSpeed = userSpeed;
+            } else {
+                JOptionPane.showMessageDialog(null, 
+                    "Invalid speed! Using default speed (20)", 
+                    "Warning", 
+                    JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (NumberFormatException | NullPointerException e) {
+            JOptionPane.showMessageDialog(null, 
+                "Invalid input! Using default speed (20)", 
+                "Warning", 
+                JOptionPane.WARNING_MESSAGE);
+        }
 
          ballImage = Toolkit.getDefaultToolkit().getImage("download.png");
         addMouseMotionListener(this);
@@ -57,8 +81,8 @@ class ballGame extends Frame implements MouseMotionListener{
         // Calculate the distance
         double distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Base speed
-        double speed = 40;
+        // User defined speed
+        double speed = gameSpeed;
 
         // If the mouse is very close, move faster
         if (distance < cricleRadius * 3) {
