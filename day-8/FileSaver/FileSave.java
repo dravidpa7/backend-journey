@@ -1,7 +1,6 @@
 // Crete a GUI using Swing That takes File name Form user input and creates a file with that name in the current directory
 package FileSaver;
 
-import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.io.File;

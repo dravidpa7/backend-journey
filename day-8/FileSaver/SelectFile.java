@@ -1,6 +1,5 @@
 package FileSaver;
-
-import FileSaver.FileSave;
+import javax.swing.event.*;
 // Show the all txt files in the current directory and allow user to select one file using JFileChooser
 // and display the selected file name in a JOptionPane
 import java.awt.*;
@@ -11,6 +10,8 @@ public class SelectFile {
     JFrame frame;
     JButton selectButton;
     JButton createNewFileButton;
+    JButton undoButton;
+    JButton redoButton;
 
     SelectFile() {
         frame = new JFrame("Select File");
@@ -25,7 +26,7 @@ public class SelectFile {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Create object of FileSave class
-                FileSave fileSave = new FileSave();
+                new FileSave();
 
             }
         });
@@ -53,11 +54,95 @@ public class SelectFile {
                         JScrollPane scrollPane = new JScrollPane(textArea);
                         scrollPane.setPreferredSize(new Dimension(700, 500));
 
+                        // Initialize the OperationStack with initial content
+                        OperationStack.init(textArea.getText());
+
+                        // Create document listener with word boundary detection
+                        final DocumentListener docListener = new DocumentListener() {
+                            private boolean isWordBoundary = false;
+                            private Timer timer = new Timer(1000, e -> {
+                                if (isWordBoundary) {
+                                    OperationStack.recordBeforeChange(textArea.getText());
+                                    isWordBoundary = false;
+                                }
+                            });
+
+                            {
+                                timer.setRepeats(false);
+                            }
+
+                            private void handleChange(DocumentEvent e) {
+                                try {
+                                    int offset = e.getOffset();
+                                    String content = textArea.getText();
+                                    
+                                    // Check if we're at a word boundary (space, punctuation)
+                                    if (offset > 0 && offset < content.length()) {
+                                        char currentChar = content.charAt(offset);
+                                        char prevChar = content.charAt(offset - 1);
+                                        
+                                        if (Character.isWhitespace(currentChar) || 
+                                            Character.isWhitespace(prevChar) ||
+                                            isPunctuation(currentChar) ||
+                                            isPunctuation(prevChar)) {
+                                            isWordBoundary = true;
+                                            timer.restart();
+                                        }
+                                    }
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+
+                            private boolean isPunctuation(char c) {
+                                return !Character.isLetterOrDigit(c) && !Character.isWhitespace(c);
+                            }
+
+                            public void insertUpdate(DocumentEvent e) {
+                                handleChange(e);
+                            }
+                            public void removeUpdate(DocumentEvent e) {
+                                handleChange(e);
+                            }
+                            public void changedUpdate(DocumentEvent e) {
+                                // Plain text components don't fire these events
+                            }
+                        };
+
+                        // Add document listener to track changes
+                        textArea.getDocument().addDocumentListener(docListener);
+
                         // Create a small editor window with Save/Close buttons
                         final JDialog editor = new JDialog(frame, "Edit: " + selectedFile.getName(), true);
                         editor.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                         editor.setLayout(new BorderLayout());
                         editor.add(scrollPane, BorderLayout.CENTER);
+
+                        JButton undoBtn = new JButton("Undo");
+                        JButton redoBtn = new JButton("Redo");
+                        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                        topPanel.add(undoBtn);
+                        topPanel.add(redoBtn);
+                        editor.add(topPanel, BorderLayout.NORTH);
+
+                        undoBtn.addActionListener(ev -> {
+                            // Remove listener before making changes
+                            textArea.getDocument().removeDocumentListener(docListener);
+                            String prev = OperationStack.undo(textArea.getText());
+                            textArea.setText(prev);
+                            // Re-add listener after changes
+                            textArea.getDocument().addDocumentListener(docListener);
+                        });
+                        
+                        redoBtn.addActionListener(ev -> {
+                            // Remove listener before making changes
+                            textArea.getDocument().removeDocumentListener(docListener);
+                            String next = OperationStack.redo(textArea.getText());
+                            textArea.setText(next);
+                            // Re-add listener after changes
+                            textArea.getDocument().addDocumentListener(docListener);
+                        });
+
 
                         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
                         JButton saveBtn = new JButton("Save");
@@ -71,6 +156,7 @@ public class SelectFile {
                             public void actionPerformed(ActionEvent ae) {
                                 try {
                                     String newText = textArea.getText();
+
                                     java.nio.file.Files.write(path, newText.getBytes(java.nio.charset.StandardCharsets.UTF_8));
                                     JOptionPane.showMessageDialog(editor, "File saved successfully.");
                                 } catch (Exception ex) {

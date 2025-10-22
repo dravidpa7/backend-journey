@@ -1,6 +1,5 @@
 //import java awt for GUI components form submission
 
-import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
