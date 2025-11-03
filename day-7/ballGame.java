@@ -12,14 +12,14 @@ class ballGame extends Frame implements MouseMotionListener{
     ballGame(){
         // Get speed from user using dialog box
         String speedInput = JOptionPane.showInputDialog(null, 
-            "Enter game speed (10-50):\n10: Easy\n30: Medium\n50: Hard", 
+            "Enter game speed (100-1000):\n100: Easy\n500: Medium\n999: Hard", 
             "Game Speed Setup", 
             JOptionPane.QUESTION_MESSAGE);
         
         // Validate and set the speed
         try {
             double userSpeed = Double.parseDouble(speedInput);
-            if (userSpeed >= 10 && userSpeed <= 50) {
+            if (userSpeed >= 10 && userSpeed <= 1000) {
                 gameSpeed = userSpeed;
             } else {
                 JOptionPane.showMessageDialog(null, 
